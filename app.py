@@ -4,7 +4,6 @@ import os
 import pyttsx3  # For voice alerts (optional)
 import face_recognition  # For face recognition
 import streamlit as st
-from PIL import Image
 
 # Initialize text-to-speech engine (optional for alerts)
 engine = pyttsx3.init()
@@ -15,7 +14,7 @@ st.text("Press 'Start' to run the surveillance camera and 'Stop' to end it.")
 
 # Specify the directory containing known faces
 # Specify the directory containing known faces (update the path to the correct location)
-known_faces_dir = "C:/Users/AMRIT SHYAM KADBHANE/Downloads/AI-Powered_Surveillance_Camera/AI-Powered_Surveillance_Camera/"
+known_faces_dir = "./"
 
 # Load known faces and their labels
 known_faces = []
