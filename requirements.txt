@@ -1,0 +1,7 @@
+streamlit
+opencv-python
+opencv-contrib-python
+face-recognition
+pyttsx3
+Pillow
+numpy
