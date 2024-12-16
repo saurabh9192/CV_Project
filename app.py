@@ -4,6 +4,7 @@ import os
 import pyttsx3  # For voice alerts (optional)
 import face_recognition  # For face recognition
 import streamlit as st
+from PIL import Image
 
 # Initialize text-to-speech engine (optional for alerts)
 engine = pyttsx3.init()
@@ -13,26 +14,25 @@ st.title("AI-Powered Surveillance Camera")
 st.text("Press 'Start' to run the surveillance camera and 'Stop' to end it.")
 
 # Specify the directory containing known faces
-# Specify the directory containing known faces (update the path to the correct location)
-known_faces_dir = "./"
+known_faces_dir = "./known_faces"
 
 # Load known faces and their labels
 known_faces = []
 known_labels = []
 
 for filename in os.listdir(known_faces_dir):
-    if filename.endswith((".jpg", ".jpeg", ".png")):  # Ensure it's an image file
+    if filename.lower().endswith((".jpg", ".jpeg", ".png")):
         img_path = os.path.join(known_faces_dir, filename)
         image = face_recognition.load_image_file(img_path)
         encoding = face_recognition.face_encodings(image)
         if encoding:  # Check if encoding was found
             known_faces.append(encoding[0])
-            known_labels.append(os.path.splitext(filename)[0])  # Use filename (without extension) as label
+            known_labels.append(os.path.splitext(filename)[0])  # Use filename without extension as label
 
 # Initialize the video capture (use 0 for webcam)
 camera = cv2.VideoCapture(0)
 
-# Define minimum confidence threshold for object detection
+# Define minimum confidence threshold
 CONFIDENCE_THRESHOLD = 0.5
 
 def alert_user(message):
@@ -55,13 +55,11 @@ def process_frame():
     face_locations = face_recognition.face_locations(rgb_frame)
     face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
 
-    # Loop over the detected face encodings
+    # Loop over detected face encodings
     for face_encoding, face_location in zip(face_encodings, face_locations):
-        # Compare with known faces
         matches = face_recognition.compare_faces(known_faces, face_encoding)
         name = "Unknown"
 
-        # If a match was found, find the corresponding label
         if True in matches:
             first_match_index = matches.index(True)
             name = known_labels[first_match_index]
@@ -71,26 +69,13 @@ def process_frame():
         cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
         cv2.putText(frame, name, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-        # Trigger an alert if an unknown person is detected
         if name == "Unknown":
             alert_user("Alert! Unknown person detected!")
 
     # Convert frame to PIL image for Streamlit
     return Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
-# # Start and stop buttons for Streamlit
-# start = st.button("Start")
-# stop = st.button("Stop")
-
-# if start:
-#     stframe = st.empty()
-#     while True:
-#         frame_image = process_frame()
-#         if frame_image is not None:
-#             stframe.image(frame_image, caption="AI Surveillance Camera", use_column_width=True)
-#         if stop:
-#             break
-
+# Manage Streamlit session state
 if "camera_running" not in st.session_state:
     st.session_state.camera_running = False
 
@@ -108,7 +93,6 @@ if st.session_state.camera_running:
         frame_image = process_frame()
         if frame_image is not None:
             stframe.image(frame_image, caption="AI Surveillance Camera", use_container_width=True)
-
 
 # Release the camera when done
 camera.release()
